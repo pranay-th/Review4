@@ -2,10 +2,11 @@ import pandas as pd
 from pathlib import Path
 from sqlalchemy.orm import Session
 from app.models import (
-    Vessel, TradeRecord, Cost, Cargo, TradeCategory
+    Vessel, TradeRecord, Cost, Cargo, TradeCategory, CountrySummary
 )
 
 CSV_PATH = Path("dataset/Cleaned.csv")
+COUNTRY_SUMMARY_PATH = Path("dataset/CountrySummary.csv")
 
 
 def _val(row, col):
@@ -142,5 +143,37 @@ def load_csv_to_db(db: Session) -> dict:
     return {
         "rows_read": rows_read,
         "rows_inserted": rows_inserted,
+        "rows_skipped": rows_skipped,
+    }
+
+
+def load_country_summary(db: Session) -> dict:
+    if not COUNTRY_SUMMARY_PATH.exists():
+        raise FileNotFoundError(f"{COUNTRY_SUMMARY_PATH.name} not found")
+
+    df = pd.read_csv(COUNTRY_SUMMARY_PATH)
+    rows_read = len(df)
+    rows_skipped = 0
+
+    db.query(CountrySummary).delete()
+    db.commit()
+
+    for _, row in df.iterrows():
+        try:
+            db.add(CountrySummary(
+                flag=_str(row, "flag"),
+                total_trade_volume_usd=_int(row, "total_trade_volume_usd"),
+                total_trades=_int(row, "total_trades"),
+                average_trade_value_usd=_int(row, "average_trade_value_usd"),
+                commodities=_str(row, "commodities"),
+                date=pd.to_datetime(_val(row, "date"), errors="coerce"),
+            ))
+        except Exception:
+            rows_skipped += 1
+
+    db.commit()
+    return {
+        "rows_read": rows_read,
+        "rows_inserted": rows_read - rows_skipped,
         "rows_skipped": rows_skipped,
     }

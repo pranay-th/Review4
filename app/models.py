@@ -1,6 +1,6 @@
 import datetime
 from sqlalchemy import (
-    Boolean, Column, DateTime, Float,
+    Boolean, BigInteger, Column, DateTime, Float,
     ForeignKey, Integer, String
 )
 from sqlalchemy.orm import relationship
@@ -78,9 +78,9 @@ class CountrySummary(Base):
     __tablename__ = "country_summary"
     summary_id = Column(Integer, primary_key=True, autoincrement=True)
     flag = Column(String, unique=True)
-    total_trade_volume_usd = Column(Integer)
+    total_trade_volume_usd = Column(BigInteger)
     total_trades = Column(Integer)
-    average_trade_value_usd = Column(Integer)
+    average_trade_value_usd = Column(BigInteger)
     commodities = Column(String)
     date = Column(DateTime)
 

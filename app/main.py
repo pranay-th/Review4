@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.database import Base, engine
+import app.models  # ensures all models are registered to Base before create_all
 from app.routers import trade, analytics, prediction, loader
 
 Base.metadata.create_all(bind=engine)
