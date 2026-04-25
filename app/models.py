@@ -1,3 +1,5 @@
+from xmlrpc.client import DateTime
+
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -42,6 +44,10 @@ class Vessel(Base):
     routes = relationship("Route", back_populates="vessel", cascade="all, delete-orphan")
     costs = relationship("Cost", back_populates="vessel", cascade="all, delete-orphan")
     cargos = relationship("Cargo", back_populates="vessel", cascade="all, delete-orphan")
+    trade_records = relationship("TradeRecord", back_populates="vessel", cascade="all, delete-orphan")
+    country_summary = relationship("CountrySummary", back_populates="vessel", cascade="all, delete-orphan")
+    trade_categories = relationship("TradeCategory", back_populates="vessel", cascade="all, delete-orphan")
+
 
 
 class Route(Base):
@@ -53,7 +59,7 @@ class Route(Base):
     date = Column(DateTime)
     transit_status = Column(String)
     destination = Column(String)
-    rerouted = Column(Integer)
+    rerouted = Column(Boolean)
     days_delayed = Column(Integer)
 
     vessel = relationship("Vessel", back_populates="routes")
@@ -81,3 +87,49 @@ class Cargo(Base):
     total_asset_value_at_risk_usd = Column(Integer)
 
     vessel = relationship("Vessel", back_populates="cargos")
+
+
+class TradeRecord(Base):
+    __tablename__ = "trade_records"
+
+    trade_id = Column(Integer, primary_key=True, autoincrement=True)
+    vessel_id = Column(Integer, ForeignKey("vessels.vessel_id"))
+    flag = Column(String)
+    destination = Column(String)
+    date = Column(DateTime)
+    commodity = Column(String)
+    estimated_cargo_value_usd = Column(Integer)
+    transit_status = Column(String)
+    trade_tier = Column(String)
+    rerouted = Column(Boolean)
+    
+    vessel = relationship("Vessel", back_populates="trade_records")
+
+
+class CountrySummary(Base):
+    __tablename__ = "country_summary"
+
+    summary_id = Column(Integer, primary_key=True, autoincrement=True)
+    flag = Column(String, unique=True)
+    total_trade_volume_usd = Column(Integer)
+    total_trades = Column(Integer)
+    average_trade_value_usd = Column(Integer)
+    commodities = Column(String)
+    date = Column(DateTime)
+    
+
+
+class TradeCategory(Base):
+    __tablename__ = "trade_categories"
+
+    category_id = Column(Integer, primary_key=True, autoincrement=True)
+    trade_tier = Column(String, unique=True)
+    transit_status = Column(String)
+    commodity = Column(String)
+    vessel = relationship("Vessel", back_populates="trade_categories")
+
+class LogsTable(Base):
+    __tablename__ = "logs_table"
+    log_id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    message = Column(String)
