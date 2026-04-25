@@ -59,14 +59,44 @@ class RerouteSummary(BaseModel):
 
 # --- Prediction schemas ---
 
-class PredictionInput(BaseModel):
-    ship_hull_value_usd: float
-    insurance_premium_delta_pct: float
-    days_delayed: int
-    extra_fuel_tonnes: float
-    reroute_penalty_usd: float
-    estimated_cargo_value_usd: float
+class TransitPredictionInput(BaseModel):
+    mmsi: Optional[float] = None
+    flag: Optional[str] = None
+    trade_tier: Optional[str] = None
+    commodity: Optional[str] = None
+    destination: Optional[str] = None
+    payment_rail: Optional[str] = None
+    continent: Optional[str] = None
 
 
-class PredictionOutput(BaseModel):
-    predicted_total_transit_cost_usd: float
+class TransitPredictionOutput(BaseModel):
+    predicted_transit_status: str
+    probabilities: dict
+
+
+class GrowthPredictionInput(BaseModel):
+    toll_usd: Optional[float] = 0
+    rerouted: Optional[int] = 0
+    ship_hull_value_usd: Optional[float] = 0
+    insurance_premium_delta_pct: Optional[float] = 0
+    insurance_cost_usd: Optional[float] = 0
+    days_delayed: Optional[int] = 0
+    extra_fuel_tonnes: Optional[float] = 0
+    reroute_penalty_usd: Optional[float] = 0
+    total_transit_cost_usd: Optional[float] = 0
+    estimated_cargo_value_usd: Optional[float] = 0
+    total_asset_value_at_risk_usd: Optional[float] = 0
+    inflation_premium_per_unit: Optional[float] = 0
+    month: Optional[int] = 1
+    year: Optional[int] = 2026
+    flag: Optional[str] = None
+    trade_tier: Optional[str] = None
+    transit_status: Optional[str] = None
+    commodity: Optional[str] = None
+    destination: Optional[str] = None
+    payment_rail: Optional[str] = None
+    continent: Optional[str] = None
+
+
+class GrowthPredictionOutput(BaseModel):
+    predicted_total_asset_value_at_risk_usd: float
