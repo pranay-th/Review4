@@ -45,18 +45,18 @@ def delete_record(db: Session, record_id: int) -> bool:
     return True
 
 
-# --- Analytics aggregations (to be filled in after data engineer confirms logic) ---
+# --- Analytics aggregations ---
 
 def get_top_countries(db: Session, limit: int = 10) -> list[dict]:
-    # TODO: confirm grouping column and ranking metric with data engineer
+    # TODO 
     raise NotImplementedError
 
 
 def get_monthly_trends(db: Session) -> list[dict]:
-    # TODO: confirm date truncation and aggregation fields with data engineer
+    # TODO
     raise NotImplementedError
 
 
 def get_cost_by_continent(db: Session) -> list[dict]:
-    # TODO: confirm summary fields with data engineer
+    # TODO
     raise NotImplementedError

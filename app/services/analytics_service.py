@@ -2,15 +2,15 @@ from sqlalchemy.orm import Session
 
 
 def get_top_countries(db: Session, limit: int = 10) -> list[dict]:
-    # TODO: implement once data engineer confirms aggregation logic
+    # TODO
     raise NotImplementedError
 
 
 def get_region_summary(db: Session) -> list[dict]:
-    # TODO: implement once data engineer confirms region grouping logic
+    # TODO
     raise NotImplementedError
 
 
 def get_trade_trends(db: Session) -> list[dict]:
-    # TODO: implement once data engineer confirms trend analysis approach
+    # TODO
     raise NotImplementedError
