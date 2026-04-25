@@ -1,0 +1,18 @@
+summary_id,flag,total_trade_volume_usd,total_trades,average_trade_value_usd,commodities,date
+1,China,22180000000,148,149864864.86486486,Various;Bulk Carrier;Container Ship;Crude Oil Tanker;LNG Carrier,2026-04-25 16:17:09.138472
+2,Germany,19700000000,128,153906250.0,Container Ship;Bulk Carrier;Crude Oil Tanker;LNG Carrier,2026-04-25 16:17:09.138472
+3,Greece,7990000000,58,137758620.68965518,Various;Container Ship;Crude Oil Tanker;LNG Carrier;Bulk Carrier,2026-04-25 16:17:09.138472
+4,India,14100000000,97,145360824.74226806,Various;LNG Carrier;Container Ship;Bulk Carrier;Crude Oil Tanker,2026-04-25 16:17:09.138472
+5,Iran,48660000000,253,192332015.8102767,Crude Oil;Crude Oil Tanker;Container Ship;LNG Carrier;Bulk Carrier,2026-04-25 16:17:09.138472
+6,Iraq,11620000000,69,168405797.10144928,LNG Carrier;Bulk Carrier;Crude Oil Tanker;Container Ship,2026-04-25 16:17:09.138472
+7,Israel,22230000000,144,154375000.0,Container Ship;LNG Carrier;Bulk Carrier;Crude Oil Tanker,2026-04-25 16:17:09.138472
+8,Liberia,13130000000,81,162098765.43209878,Container Ship;Crude Oil Tanker;Bulk Carrier;LNG Carrier,2026-04-25 16:17:09.138472
+9,Marshall Islands,10020000000,69,145217391.3043478,LNG Carrier;Crude Oil Tanker;Bulk Carrier;Container Ship,2026-04-25 16:17:09.138472
+10,Norway,22240000000,132,168484848.4848485,Bulk Carrier;Container Ship;LNG Carrier;Crude Oil Tanker,2026-04-25 16:17:09.138472
+11,Pakistan,14810000000,90,164555555.55555555,Container Ship;Bulk Carrier;Crude Oil Tanker;LNG Carrier,2026-04-25 16:17:09.138472
+12,Panama,12720000000,81,157037037.03703704,LNG Carrier;Crude Oil Tanker;Container Ship;Bulk Carrier,2026-04-25 16:17:09.138472
+13,Russia,17120000000,107,160000000.0,Crude Oil Tanker;Container Ship;LNG Carrier;Bulk Carrier,2026-04-25 16:17:09.138472
+14,Turkey,21490000000,133,161578947.36842105,LNG Carrier;Container Ship;Bulk Carrier;Crude Oil Tanker,2026-04-25 16:17:09.138472
+15,UAE,10970000000,72,152361111.1111111,Container Ship;LNG Carrier;Crude Oil Tanker;Bulk Carrier,2026-04-25 16:17:09.138472
+16,UK,20470000000,133,153909774.43609023,Bulk Carrier;Crude Oil Tanker;Container Ship;LNG Carrier,2026-04-25 16:17:09.138472
+17,USA,14990000000,95,157789473.68421054,Crude Oil Tanker;Container Ship;Bulk Carrier;LNG Carrier,2026-04-25 16:17:09.138472
