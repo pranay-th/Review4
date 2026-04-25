@@ -1,287 +1,127 @@
-Project Overview:
-This project demonstrates PostgreSQL concepts including DDL, DML, Functions,
-Triggers, Joins, and Aggregations. It simulates a system for managing vessel
-trade data, country information, and logging system activities.
+# Hormuz Trade Analytics API
 
-------------------------------------------------------------
-Tables Used:
+A backend-powered analytical system for maritime trade data through the Strait of Hormuz. Covers data cleaning, database design, REST APIs, and ML inference.
 
-1. vessels  
-   Stores vessel-related data including toll charges.
+---
 
-2. logs_table  
-   Stores logs with message and timestamp.
+## Dataset
 
-3. countryinfo  
-   Stores country name and commodity.
+- Source: `hormuz_trade_uncleaned.csv` — 1890 rows, 23 columns
+- Covers vessel trade records from March–May 2026 including costs, routing, cargo, and country flags
 
-4. country_summary  
-   Stores aggregated trade data.
+---
 
-5. trade_records and cargo  
-   Used for JOIN operations.
+## Data Analysis
 
-------------------------------------------------------------
-Features Implemented:
+Performed in `notebooks/analysis.ipynb` using Pandas, NumPy, and Plotly.
 
-1. Aggregation Function
+- Dropped `naval_escort_status` (excessive nulls)
+- Filled `inflation_premium_per_unit` missing values with mode
+- Converted date columns, encoded categoricals
+- Feature engineering: extracted `month`, `year`, one-hot encoded flags, tiers, commodities
 
-Function Name: countcost()  
-Purpose: Calculates total toll cost from vessels table.
+**Visualizations**
 
-CREATE OR REPLACE FUNCTION countcost()
-RETURNS INT AS $$
-BEGIN
-  RETURN (SELECT SUM(toll_usd) FROM vessels);
-END;
-$$ LANGUAGE plpgsql;
+![Top Countries by Trade Value](visuals/top_countries.png)
+![Region-wise Trade Distribution](visuals/region_distribution.png)
+![Monthly Trade Trend](visuals/trade_trend.png)
 
-Usage:
-SELECT countcost();
+---
 
-------------------------------------------------------------
-2. Trigger on countryinfo Table
+## Database
 
-CREATE OR REPLACE FUNCTION log_country_insert_func()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO logs_table(message, "timestamp")
-  VALUES ('Inserted new country ' || NEW.name, NOW());
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+PostgreSQL hosted on NeonDB. Schema designed with 6 normalized tables:
 
-CREATE TRIGGER trg_log_country_insert
-AFTER INSERT ON countryinfo
-FOR EACH ROW
-EXECUTE FUNCTION log_country_insert_func();
+| Table | Purpose |
+|-------|---------|
+| `vessels` | Main trade records |
+| `trade_records` | Transit and routing info per vessel |
+| `costs` | Cost breakdown per vessel |
+| `cargo` | Cargo and value info per vessel |
+| `country_summary` | Aggregated stats per country |
+| `trade_categories` | Distinct trade tier lookup |
 
-------------------------------------------------------------
-3. Insert Operation
+Includes PL/pgSQL functions, AFTER INSERT triggers (auto-logging to `logs_table`), aggregations, and JOIN queries. See `sql/schema.sql`.
 
-INSERT INTO countryinfo (name, commodity)
-VALUES ('INDIA', 'CRUDE OIL');
+---
 
-------------------------------------------------------------
-4. JOIN Query
+## Machine Learning
 
-SELECT t.flag, c.commodity
-FROM trade_records AS t
-INNER JOIN cargo AS c
-ON t.vessel_id = c.vessel_id;
+Two models trained in the notebook and saved to `notebooks/models/`:
 
-------------------------------------------------------------
-5. Trigger on country_summary Table
+| Model | Type | Predicts |
+|-------|------|---------|
+| `rf_model.pkl` | Random Forest Classifier | Transit status: `Passed / Rerouted / Blocked` |
+| `country_growth_model.pkl` | Linear Regression + StandardScaler | `total_asset_value_at_risk_usd` |
 
-CREATE OR REPLACE FUNCTION log_country_summary_insert()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO logs_table(message, "timestamp")
-  VALUES ('Summary updated for flag ' || NEW.flag, NOW());
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+Random Forest accuracy: ~85–90%
 
-CREATE TRIGGER trg_log_country_summary
-AFTER INSERT ON country_summary
-FOR EACH ROW
-EXECUTE FUNCTION log_country_summary_insert();
+---
 
-------------------------------------------------------------
-6. Insert into country_summary
+## Backend API
 
-INSERT INTO country_summary (
-  flag,
-  total_trade_volume_usd,
-  total_trades,
-  average_trade_value_usd,
-  commodities,
-  date
-)
-VALUES (
-  'INDIA',
-  1000000,
-  10,
-  100000,
-  'CRUDE OIL',
-  NOW()
-);
+Built with FastAPI + SQLAlchemy ORM, connected to NeonDB.
 
-------------------------------------------------------------
-Logs Verification:
+**Endpoints**
 
-SELECT * FROM logs_table;
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/load-csv` | Bulk load dataset into all tables |
+| POST | `/load-country-summary` | Load country summary CSV |
+| POST | `/vessels/` | Insert a vessel record |
+| GET | `/vessels/` | List vessels with optional filters |
+| GET | `/vessels/{id}` | Get vessel by ID |
+| DELETE | `/vessels/{id}` | Delete a vessel |
+| GET | `/top-countries` | Top countries by transit cost |
+| GET | `/region-summary` | Cost breakdown by continent |
+| GET | `/trade-trends` | Monthly trade volume and cost |
+| POST | `/predict-transit` | Predict transit status (RF model) |
+| POST | `/predict-growth` | Predict asset value at risk (Linear Regression) |
 
-How to Run:
+Swagger UI: `http://127.0.0.1:8000/docs`
 
-1. Create all required tables
-2. Run functions
-3. Create triggers
-4. Insert data
-5. Execute queries
+---
 
-Concepts Covered:
+## Setup
 
-- DDL (CREATE TABLE)
-- DML (INSERT)
-- Functions (PL/pgSQL)
-- Triggers (AFTER INSERT)
-- Aggregation (SUM)
-- INNER JOIN
-- Logging system
+```bash
+pip install -r requirements.txt
+```
 
-Future Improvements:
+`.env`:
+```
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
+```
 
-- Add UPDATE and DELETE triggers
-- Add indexing
-- Connect with Node.js backend
-- Deploy on cloud (Neon)
+```bash
+uvicorn app.main:app --reload
+```
 
-Project Overview
+---
 
-This project focuses on analyzing maritime trade data and building a machine learning model to predict the transit status of vessels (e.g., Passed, Delayed, Rerouted).
+## Project Structure
 
-The complete workflow implemented in this project includes:
-
-Data cleaning and preprocessing
-Handling missing values
-Feature engineering
-Exploratory Data Analysis (EDA)
-Model building using Random Forest
-Model evaluation and saving
-Dataset Loading
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly.express as px
-
-df = pd.read_csv('hormuz_trade_uncleaned.csv')
-df
-Dataset Summary
-Total Rows: 1890
-Total Columns: 23
-Data Cleaning
-Missing Values Check
-df.isnull().sum()
-Observations
-naval_escort_status had a large number of missing values → removed
-inflation_premium_per_unit had missing values → filled using mode
-df = df.drop(['naval_escort_status'], axis=1)
-
-df['inflation_premium_per_unit'] = df['inflation_premium_per_unit'].fillna(
-    df['inflation_premium_per_unit'].mode()[0]
-)
-
-Data Type Conversion
-df['date'] = pd.to_datetime(df['date'])
-df.dtypes
-Final Clean Dataset
-No missing values
-Correct data types
-Dataset is fully prepared for modeling
-Exploratory Data Analysis (EDA)
-Transit Cost Distribution
-fig = px.box(df, y='total_transit_cost_usd', title="Trade Cost Distribution")
-fig.show()
-
-Explanation:
-This graph shows the distribution of total transit cost and highlights outliers.
-It helps understand cost variations across different vessels.
-
-Total Graphs Used
-1 main visualization (Box Plot for cost distribution)
-(You can add more if needed like bar charts, heatmaps, etc.)
-Model Building
-Target Variable
-target = 'transit_status'
-Selected Features
-features = [
-    'mmsi',
-    'flag',
-    'trade_tier',
-    'commodity',
-    'destination',
-    'payment_rail',
-    'continent'
-]
-
-These features were selected because they directly influence vessel movement and trade behavior.
-
-Encoding Categorical Data
-from sklearn.preprocessing import LabelEncoder
-
-le = LabelEncoder()
-
-for col in features:
-    if df[col].dtype == 'object':
-        df[col] = le.fit_transform(df[col])
-Train-Test Split
-from sklearn.model_selection import train_test_split
-
-X = df[features]
-y = df[target]
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-Model Training
-from sklearn.ensemble import RandomForestClassifier
-
-model = RandomForestClassifier()
-model.fit(X_train, y_train)
-
-What you implemented:
-
-A Random Forest classification model
-Used ensemble learning to improve prediction accuracy
-Model Evaluation
-Predictions
-y_pred = model.predict(X_test)
-Accuracy
-from sklearn.metrics import accuracy_score
-
-accuracy = accuracy_score(y_test, y_pred)
-print(accuracy)
-
-Model Accuracy:
-
-Achieved accuracy: ~85% to 90%
-Classification Report
-from sklearn.metrics import classification_report
-
-print(classification_report(y_test, y_pred))
-
-What it shows:
-
-Precision
-Recall
-F1-score for each class
-Confusion Matrix
-from sklearn.metrics import confusion_matrix
-
-confusion_matrix(y_test, y_pred)
-
-Purpose:
-
-Shows correct vs incorrect predictions
-Helps evaluate model performance in detail
-Model Saving
-import joblib
-
-joblib.dump(model, "model.pkl")
-
-What you did:
-
-Saved trained model for future use (inference or deployment)
-Key Learnings
-How to clean real-world datasets with missing values
-Importance of feature selection in machine learning
-Handling categorical variables using encoding
-Understanding model evaluation metrics (accuracy, precision, recall)
-Building and training a Random Forest model
-Saving models for reuse
-Output Summary
-Cleaned dataset with no missing values
-1 visualization (Transit Cost Distribution)
-Trained Random Forest model
-Accuracy achieved: ~85–90%
-Model successfully saved as model.pkl
+```
+├── app/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── crud.py
+│   ├── csv_loader.py
+│   ├── routers/
+│   │   ├── trade.py
+│   │   ├── analytics.py
+│   │   ├── prediction.py
+│   │   └── loader.py
+│   └── services/
+│       ├── ml_service.py
+│       └── analytics_service.py
+├── notebooks/
+│   ├── analysis.ipynb
+│   └── models/
+├── dataset/
+├── sql/
+├── visuals/
+└── requirements.txt
+```
