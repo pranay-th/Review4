@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import Base, engine
-from app.routers import trade, analytics, prediction
+from app.routers import trade, analytics, prediction, loader
 
 Base.metadata.create_all(bind=engine)
 
@@ -13,6 +13,7 @@ app = FastAPI(
 app.include_router(trade.router)
 app.include_router(analytics.router)
 app.include_router(prediction.router)
+app.include_router(loader.router)
 
 
 @app.get("/")
