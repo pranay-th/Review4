@@ -2,14 +2,20 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas import TradeRecordCreate, TradeRecordOut
+from app.schemas import VesselCreate, VesselOut
 from app import crud
 
-router = APIRouter(prefix="/trade", tags=["Trade"])
+router = APIRouter(prefix="/vessels", tags=["Vessels"])
 
 
-@router.get("/", response_model=list[TradeRecordOut])
-def list_records(
+@router.post("/", response_model=VesselOut, status_code=201)
+def insert_vessel(payload: VesselCreate, db: Session = Depends(get_db)):
+    """Insert a new vessel record into the main table."""
+    return crud.create_vessel(db, payload)
+
+
+@router.get("/", response_model=list[VesselOut])
+def list_vessels(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, le=500),
     continent: Optional[str] = None,
@@ -20,21 +26,16 @@ def list_records(
     return crud.get_all_records(db, skip=skip, limit=limit, continent=continent, commodity=commodity, flag=flag)
 
 
-@router.get("/{record_id}", response_model=TradeRecordOut)
-def get_record(record_id: int, db: Session = Depends(get_db)):
-    record = crud.get_record_by_id(db, record_id)
+@router.get("/{vessel_id}", response_model=VesselOut)
+def get_vessel(vessel_id: int, db: Session = Depends(get_db)):
+    record = crud.get_record_by_id(db, vessel_id)
     if not record:
-        raise HTTPException(status_code=404, detail="Record not found")
+        raise HTTPException(status_code=404, detail="Vessel not found")
     return record
 
 
-@router.post("/", response_model=TradeRecordOut, status_code=201)
-def create_record(record: TradeRecordCreate, db: Session = Depends(get_db)):
-    return crud.create_record(db, record)
-
-
-@router.delete("/{record_id}", status_code=204)
-def delete_record(record_id: int, db: Session = Depends(get_db)):
-    deleted = crud.delete_record(db, record_id)
+@router.delete("/{vessel_id}", status_code=204)
+def delete_vessel(vessel_id: int, db: Session = Depends(get_db)):
+    deleted = crud.delete_record(db, vessel_id)
     if not deleted:
-        raise HTTPException(status_code=404, detail="Record not found")
+        raise HTTPException(status_code=404, detail="Vessel not found")

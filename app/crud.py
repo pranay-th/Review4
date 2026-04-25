@@ -1,10 +1,18 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from app.models import TradeRecord
-from app.schemas import TradeRecordCreate
+from app.models import Vessel
+from app.schemas import VesselCreate
 
 
-# --- Basic Trade CRUD ---
+# --- Vessel CRUD ---
+
+def create_vessel(db: Session, data: VesselCreate) -> Vessel:
+    vessel = Vessel(**data.model_dump())
+    db.add(vessel)
+    db.commit()
+    db.refresh(vessel)
+    return vessel
+
 
 def get_all_records(
     db: Session,
@@ -13,27 +21,19 @@ def get_all_records(
     continent: Optional[str] = None,
     commodity: Optional[str] = None,
     flag: Optional[str] = None,
-) -> list[TradeRecord]:
-    query = db.query(TradeRecord)
+) -> list[Vessel]:
+    query = db.query(Vessel)
     if continent:
-        query = query.filter(TradeRecord.continent == continent)
+        query = query.filter(Vessel.continent == continent)
     if commodity:
-        query = query.filter(TradeRecord.commodity == commodity)
+        query = query.filter(Vessel.commodity == commodity)
     if flag:
-        query = query.filter(TradeRecord.flag == flag)
+        query = query.filter(Vessel.flag == flag)
     return query.offset(skip).limit(limit).all()
 
 
-def get_record_by_id(db: Session, record_id: int) -> Optional[TradeRecord]:
-    return db.query(TradeRecord).filter(TradeRecord.id == record_id).first()
-
-
-def create_record(db: Session, record: TradeRecordCreate) -> TradeRecord:
-    db_record = TradeRecord(**record.model_dump())
-    db.add(db_record)
-    db.commit()
-    db.refresh(db_record)
-    return db_record
+def get_record_by_id(db: Session, record_id: int) -> Optional[Vessel]:
+    return db.query(Vessel).filter(Vessel.vessel_id == record_id).first()
 
 
 def delete_record(db: Session, record_id: int) -> bool:
@@ -45,18 +45,18 @@ def delete_record(db: Session, record_id: int) -> bool:
     return True
 
 
-# --- Analytics aggregations ---
+# --- Analytics aggregations (to be filled after data engineer confirms logic) ---
 
 def get_top_countries(db: Session, limit: int = 10) -> list[dict]:
-    # TODO 
+    # TODO: confirm grouping column and ranking metric with data engineer
     raise NotImplementedError
 
 
 def get_monthly_trends(db: Session) -> list[dict]:
-    # TODO
+    # TODO: confirm date truncation and aggregation fields with data engineer
     raise NotImplementedError
 
 
 def get_cost_by_continent(db: Session) -> list[dict]:
-    # TODO
+    # TODO: confirm summary fields with data engineer
     raise NotImplementedError

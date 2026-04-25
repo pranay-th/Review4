@@ -1,40 +1,36 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel
 
 
-class TradeRecordBase(BaseModel):
-    date: date
+# --- Vessel (main table) schemas ---
+
+class VesselCreate(BaseModel):
     vessel_name: str
-    mmsi: Optional[str] = None
+    date: Optional[datetime] = None
     flag: Optional[str] = None
     trade_tier: Optional[str] = None
     transit_status: Optional[str] = None
-    toll_usd: Optional[float] = None
+    toll_usd: Optional[int] = None
     rerouted: Optional[bool] = None
     commodity: Optional[str] = None
     destination: Optional[str] = None
     payment_rail: Optional[str] = None
-    ship_hull_value_usd: Optional[float] = None
+    ship_hull_value_usd: Optional[int] = None
     insurance_premium_delta_pct: Optional[float] = None
-    insurance_cost_usd: Optional[float] = None
+    insurance_cost_usd: Optional[int] = None
     days_delayed: Optional[int] = None
-    extra_fuel_tonnes: Optional[float] = None
-    reroute_penalty_usd: Optional[float] = None
-    total_transit_cost_usd: Optional[float] = None
-    naval_escort_status: Optional[str] = None
-    estimated_cargo_value_usd: Optional[float] = None
-    total_asset_value_at_risk_usd: Optional[float] = None
+    extra_fuel_tonnes: Optional[int] = None
+    reroute_penalty_usd: Optional[int] = None
+    total_transit_cost_usd: Optional[int] = None
+    estimated_cargo_value_usd: Optional[int] = None
+    total_asset_value_at_risk_usd: Optional[int] = None
     continent: Optional[str] = None
     inflation_premium_per_unit: Optional[float] = None
 
 
-class TradeRecordCreate(TradeRecordBase):
-    pass
-
-
-class TradeRecordOut(TradeRecordBase):
-    id: int
+class VesselOut(VesselCreate):
+    vessel_id: int
 
     class Config:
         from_attributes = True
